@@ -1,0 +1,16 @@
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+RAW_DATA_DIR = DATA_DIR / "raw"
+PROCESSED_DATA_DIR = DATA_DIR / "processed"
+RUNTIME_DATA_DIR = DATA_DIR / "runtime"
+MODEL_DIR = BASE_DIR / "models"
+MODEL_PATH = MODEL_DIR / "rul_model.joblib"
+METADATA_PATH = MODEL_DIR / "model_metadata.json"
+DATABASE_PATH = RUNTIME_DATA_DIR / "predictions.db"
+
+RISK_THRESHOLDS = {
+    "high": 30,
+    "medium": 80,
+}
