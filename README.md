@@ -2,19 +2,33 @@
 
 An end-to-end predictive maintenance project that uses sensor time-series data to predict Remaining Useful Life (RUL), classify machine risk, and generate maintenance recommendations.
 
-This project is designed to demonstrate applied ML engineering rather than notebook-only modelling. It includes a training pipeline, FastAPI backend, Streamlit dashboard, saved model artifact, and SQLite prediction history.
+This project demonstrates applied ML engineering rather than notebook-only modelling. It includes a training pipeline, FastAPI backend, Streamlit dashboard, saved model artifact, and SQLite prediction history.
 
 ## Project Overview
 
-The system predicts how many cycles a machine may have left before failure. The prediction is converted into a simple operational risk level:
+The system predicts how many cycles a machine may have left before failure. The prediction is converted into a practical operational risk level:
 
 - **High risk**
 - **Medium risk**
 - **Low risk**
 
-The dashboard then presents the prediction, sensor trends, recommendation text, and recent prediction history.
+The dashboard presents the prediction, sensor trends, recommendation text, model metadata, and recent prediction history.
 
-## Architecture Diagram
+## Dashboard Preview
+
+![Dashboard Overview](screenshots/dashboard_overview.png)
+
+Streamlit dashboard with sensor trend, prediction history, and model metadata.
+
+![Prediction Result](screenshots/prediction_result.png)
+
+Example RUL prediction, risk level, and maintenance recommendation.
+
+![FastAPI Docs](screenshots/fastapi_docs.png)
+
+FastAPI Swagger documentation showing `/health` and `/predict` endpoints.
+
+## Architecture
 
 ```text
 Streamlit Dashboard
@@ -50,32 +64,6 @@ The frontend and backend run as separate local services. Streamlit sends recent 
 - **SQLite**: local prediction history
 - **Plotly**: sensor trend visualization
 - **pytest**: lightweight testing
-
-## Folder Structure
-
-```text
-.
-├── api/                  # FastAPI backend
-│   ├── main.py
-│   └── schemas.py
-├── app/                  # Streamlit frontend
-│   └── dashboard.py
-├── data/
-│   ├── raw/              # raw or sample sensor data
-│   ├── processed/        # optional processed data
-│   └── runtime/          # local SQLite database
-├── models/               # trained model artifacts
-├── scripts/              # data generation and training scripts
-├── src/
-│   ├── data/             # data loading and RUL target creation
-│   ├── database/         # SQLite helper functions
-│   ├── features/         # feature engineering
-│   ├── models/           # model training and loading
-│   └── services/         # prediction and recommendation logic
-├── tests/                # lightweight tests
-├── requirements.txt
-└── README.md
-```
 
 ## Local Setup
 
@@ -168,6 +156,32 @@ Returns recent prediction records saved by the backend.
 - Show the latest prediction history from SQLite
 - Display model metadata after training
 
+## Project Structure
+
+```text
+.
++-- api/                  # FastAPI backend
+|   +-- main.py
+|   +-- schemas.py
++-- app/                  # Streamlit frontend
+|   +-- dashboard.py
++-- data/
+|   +-- raw/              # raw or sample sensor data
+|   +-- processed/        # optional processed data
+|   +-- runtime/          # local SQLite database
++-- models/               # trained model artifacts
++-- scripts/              # data generation and training scripts
++-- src/
+|   +-- data/             # data loading and RUL target creation
+|   +-- database/         # SQLite helper functions
+|   +-- features/         # feature engineering
+|   +-- models/           # model training and loading
+|   +-- services/         # prediction and recommendation logic
++-- tests/                # lightweight tests
++-- requirements.txt
++-- README.md
+```
+
 ## Data Flow
 
 1. Raw sensor time-series data is loaded from `data/raw/`.
@@ -205,23 +219,6 @@ Stored columns:
 
 FastAPI inserts a new row after each successful `/predict` request.
 
-## Screenshots
-
-Add screenshots here before publishing the repository:
-
-```text
-screenshots/dashboard-overview.png
-screenshots/prediction-result.png
-screenshots/prediction-history.png
-```
-
-Suggested screenshots:
-
-- Dashboard overview with sensor trend chart
-- Prediction result showing RUL and risk level
-- Prediction history table
-- FastAPI `/docs` page
-
 ## Example Workflow
 
 1. Generate sample data.
@@ -251,7 +248,7 @@ Suggested screenshots:
 - Add Docker and `docker-compose`.
 - Add more tests for feature engineering, API prediction, and database writes.
 - Add model versioning and experiment tracking.
-- Add screenshots and a short demo GIF for the GitHub README.
+- Add a short demo GIF for the GitHub README.
 
 ## What I Learned
 
