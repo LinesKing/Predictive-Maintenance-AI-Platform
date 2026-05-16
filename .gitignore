@@ -1,20 +1,31 @@
 .venv/
+venv/
+env/
 __pycache__/
+**/__pycache__/
 *.py[cod]
 .pytest_cache/
+pytest-cache-files-*/
 .mypy_cache/
 .ruff_cache/
 
-data/raw/
-data/processed/
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
 data/runtime/*
 !data/runtime/.gitkeep
-models/
+models/*
+!models/.gitkeep
 *.db
+*.db-journal
 *.sqlite
 *.sqlite3
+*.joblib
+*.pkl
 
 .env
+.env.*
 .DS_Store
 .idea/
 .vscode/

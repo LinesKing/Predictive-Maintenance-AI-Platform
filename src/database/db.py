@@ -8,6 +8,9 @@ from src.config import DATABASE_PATH
 
 
 def get_connection(db_path: str | Path = DATABASE_PATH) -> sqlite3.Connection:
+    # The FastAPI backend uses one runtime SQLite file:
+    # data/runtime/predictions.db, configured by src.config.DATABASE_PATH.
+    # Every /predict request opens a connection here before saving history.
     path = Path(db_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path)
@@ -41,6 +44,8 @@ def insert_prediction(
     recommendation: str,
     db_path: str | Path = DATABASE_PATH,
 ) -> None:
+    # Called after a successful model prediction. This keeps a simple audit
+    # trail of what the API returned to the Streamlit dashboard.
     init_db(db_path)
     with get_connection(db_path) as connection:
         connection.execute(
