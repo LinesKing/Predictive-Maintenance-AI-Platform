@@ -215,10 +215,10 @@ def risk_score_from_rul(predicted_rul: float) -> int:
 
 @st.cache_resource(show_spinner=False)
 def ensure_demo_assets() -> None:
-    if not DEFAULT_DATA.exists():
+    if not DEFAULT_DATA.exists() or DEFAULT_DATA.stat().st_size == 0:
         LOGGER.info("Default sample data missing; generating %s", DEFAULT_DATA)
         create_sample_data(DEFAULT_DATA)
-    if not MODEL_PATH.exists():
+    if not MODEL_PATH.exists() or MODEL_PATH.stat().st_size == 0:
         LOGGER.info("Model artifact missing; training direct-mode demo model at %s", MODEL_PATH)
         train_model(DEFAULT_DATA)
 
