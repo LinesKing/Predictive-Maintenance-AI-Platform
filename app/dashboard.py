@@ -13,12 +13,14 @@ import streamlit as st
 
 from src.config import DATABASE_PATH, METADATA_PATH, MODEL_PATH, RAW_DATA_DIR
 from src.data.cmapss import SENSOR_COLUMNS, add_rul_target, latest_window, load_cmapss
+from src.models.train import train_model
 from src.services.prediction_mode import normalize_prediction_mode
 from src.services.predictor import MaintenancePredictor
 from src.services.sensor_simulator import simulate_sensor_cycles
+from scripts.create_sample_data import create_sample_data
 
 API_URL = os.getenv("PREDICTIVE_MAINTENANCE_API_URL", "http://127.0.0.1:8000")
-PREDICTION_MODE_ENV = os.getenv("PREDICTION_MODE")
+PREDICTION_MODE_ENV = os.getenv("PREDICTION_MODE") or st.secrets.get("PREDICTION_MODE", None)
 DEFAULT_DATA = RAW_DATA_DIR / "sample_train_FD001.txt"
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
@@ -200,6 +202,16 @@ def risk_score_from_rul(predicted_rul: float) -> int:
     return int(round(100 - (capped_rul / 125 * 100)))
 
 
+@st.cache_resource(show_spinner=False)
+def ensure_demo_assets() -> None:
+    if not DEFAULT_DATA.exists():
+        LOGGER.info("Default sample data missing; generating %s", DEFAULT_DATA)
+        create_sample_data(DEFAULT_DATA)
+    if not MODEL_PATH.exists():
+        LOGGER.info("Model artifact missing; training direct-mode demo model at %s", MODEL_PATH)
+        train_model(DEFAULT_DATA)
+
+
 @st.cache_data(show_spinner=False)
 def load_data(path: str) -> pd.DataFrame:
     return add_rul_target(load_cmapss(path))
@@ -279,6 +291,10 @@ with st.sidebar:
     api_url = st.text_input("API URL", value=API_URL)
     window_size = st.slider("Prediction window", min_value=5, max_value=50, value=20)
     use_simulated_window = st.toggle("Use simulated live window", value=False)
+
+if Path(data_path) == DEFAULT_DATA:
+    with st.spinner("Preparing demo data and model artifacts..."):
+        ensure_demo_assets()
 
 path = Path(data_path)
 health = None
