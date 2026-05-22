@@ -4,12 +4,17 @@ import json
 import logging
 import os
 import sqlite3
+import sys
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import requests
 import streamlit as st
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.config import DATABASE_PATH, METADATA_PATH, MODEL_PATH, RAW_DATA_DIR
 from src.data.cmapss import SENSOR_COLUMNS, add_rul_target, latest_window, load_cmapss
