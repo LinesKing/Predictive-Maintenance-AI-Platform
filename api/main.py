@@ -11,9 +11,9 @@ from src.database.db import fetch_recent_predictions, init_db, insert_prediction
 from src.services.predictor import MaintenancePredictor
 
 app = FastAPI(
-    title="Predictive Maintenance API",
-    description="RUL prediction service for turbofan maintenance planning.",
-    version="0.1.0",
+    title="Predictive Maintenance AI Platform API",
+    description="Industrial RUL prediction service for maintenance risk monitoring.",
+    version="0.2.0",
 )
 
 
@@ -31,6 +31,7 @@ def startup() -> None:
 def health() -> dict[str, str | bool]:
     return {
         "status": "ok",
+        "service": "Predictive Maintenance AI Platform API",
         "model_available": MODEL_PATH.exists(),
     }
 

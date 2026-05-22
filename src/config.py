@@ -11,6 +11,7 @@ METADATA_PATH = MODEL_DIR / "model_metadata.json"
 DATABASE_PATH = RUNTIME_DATA_DIR / "predictions.db"
 
 RISK_THRESHOLDS = {
+    "critical": 10,
     "high": 30,
     "medium": 80,
 }

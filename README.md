@@ -1,115 +1,116 @@
-# Predictive Maintenance ML Dashboard
+# Predictive Maintenance AI Platform
 
-An end-to-end predictive maintenance project that uses sensor time-series data to predict Remaining Useful Life (RUL), classify machine risk, and generate maintenance recommendations.
+An industrial AI platform for predicting machine Remaining Useful Life (RUL), classifying operational risk, and recommending maintenance actions from time-series sensor data.
 
-This project demonstrates applied ML engineering rather than notebook-only modelling. It includes a training pipeline, FastAPI backend, Streamlit dashboard, saved model artifact, and SQLite prediction history.
+This project is built as a portfolio-ready ML engineering system: a trained model, FastAPI inference service, Streamlit monitoring dashboard, optional direct model inference mode, SQLite prediction history, and reproducible local run workflow.
 
 ## Project Overview
 
-Predictive maintenance means using data to estimate when equipment may need service before it fails. Instead of waiting for a breakdown, the system looks at sensor patterns and helps decide whether maintenance should happen soon.
+The platform simulates how an industrial operations team might monitor rotating equipment, turbofan engines, or other sensor-driven assets. Recent sensor cycles are converted into engineered features, passed through a trained regression model, and translated into a risk level:
 
-Remaining Useful Life, or RUL, is the estimated number of operating cycles a machine has left before failure. A lower RUL means the machine is closer to needing maintenance.
+- `LOW`
+- `MEDIUM`
+- `HIGH`
+- `CRITICAL`
 
-Time-series sensor data matters because machines degrade over time. A single sensor reading may not say much, but trends across recent cycles can reveal changes in temperature, pressure, vibration, or other signals that point to wear.
+The dashboard presents system health, machine risk score, predicted RUL, risk badge, maintenance recommendation, sensor trends, model metadata, and recent prediction history.
 
-This project predicts RUL and converts that number into a practical operational risk level:
+## Why This Project Matters
 
-- **High risk**
-- **Medium risk**
-- **Low risk**
+Predictive maintenance is a practical AI use case because downtime is expensive, failures can be safety-critical, and sensor data is often available before an asset breaks. A useful system must do more than train a model in a notebook. It needs reliable data flow, a serving interface, operational context, and clear outputs that engineers can act on.
 
-The dashboard presents the prediction, sensor trends, recommendation text, model metadata, and recent prediction history.
+This repository demonstrates:
 
-## Dashboard Preview
-
-![Dashboard Overview](screenshots/dashboard_overview.png)
-
-Streamlit dashboard with sensor trend, prediction history, and model metadata.
-
-![Prediction Result](screenshots/prediction_result.png)
-
-Example RUL prediction, risk level, and maintenance recommendation.
-
-![FastAPI Docs](screenshots/fastapi_docs.png)
-
-FastAPI Swagger documentation showing `/health` and `/predict` endpoints.
+- ML model training and persistence
+- Time-series feature engineering
+- FastAPI model serving
+- Streamlit monitoring UI
+- Risk translation from model output
+- Local database persistence
+- Beginner-friendly, reproducible setup
 
 ## Architecture
 
 ```text
-Streamlit Dashboard
+Sensor Data / Simulator
         |
-        | HTTP request: /predict
         v
-FastAPI Backend
+Feature Engineering
         |
-        | feature engineering + model inference
         v
-Saved ML Model
+Trained RUL Model
         |
-        | prediction result
         v
-SQLite Prediction History
+Prediction Layer
+        |
+        +-- Local API mode: Streamlit -> FastAPI
+        +-- Direct mode: Streamlit -> model artifact
+        |
+        v
+Risk + Recommendation
+        |
+        v
+Streamlit Industrial Monitoring Dashboard
 ```
 
-In short:
+Local service flow:
 
 ```text
-Streamlit -> FastAPI -> ML Model -> SQLite
+Streamlit Dashboard -> FastAPI API -> ML Model -> Risk + Recommendation -> SQLite History
 ```
 
-The frontend and backend run as separate local services. Streamlit sends recent sensor readings to FastAPI, FastAPI loads the trained model, predicts RUL, saves the prediction to SQLite, and returns the result for display.
+Cloud-friendly direct flow:
 
-## How The System Works
+```text
+Streamlit Dashboard -> Saved ML Model -> Risk + Recommendation
+```
 
-### 1. Streamlit Dashboard
+Training and inference are intentionally separate. Training happens offline through the scripts in `scripts/`, while the dashboard can either call the FastAPI backend or load the saved model artifact directly.
 
-The dashboard is the user-facing part of the project. It lets a user select a machine, view sensor trends, request a prediction, and review previous predictions.
+## Tech Stack
 
-### 2. FastAPI Backend
+- Python
+- pandas and NumPy
+- scikit-learn
+- FastAPI
+- Streamlit
+- Plotly
+- SQLite
+- pytest
 
-FastAPI receives prediction requests from Streamlit. It validates the request, prepares the data for inference, calls the model, and returns a clean JSON response.
+## Features
 
-### 3. ML Model Inference
+- Predict Remaining Useful Life from recent sensor cycles
+- Classify machine risk as `LOW`, `MEDIUM`, `HIGH`, or `CRITICAL`
+- Generate simple maintenance recommendations based on predicted risk
+- Serve predictions through a FastAPI backend
+- Run predictions directly inside Streamlit for cloud deployment
+- Monitor machine health in a Streamlit dashboard
+- View system health cards, risk score, risk badge, and sensor trends
+- Store prediction history in SQLite
+- Generate synthetic C-MAPSS-like sample data
+- Simulate real-time sensor windows for local demos
+- Run locally without cloud services
 
-The trained model estimates RUL from engineered features created from recent sensor readings. The raw model output is then converted into a risk level and maintenance recommendation.
+## Project Structure
 
-### 4. SQLite Prediction History
+```text
+.
++-- api/                  # FastAPI backend
++-- app/                  # Streamlit dashboard
++-- data/                 # raw, processed, and runtime data
++-- models/               # trained model artifact and metadata
++-- scripts/              # sample data generation and training CLIs
++-- src/
+|   +-- data/             # C-MAPSS loading and RUL target creation
+|   +-- database/         # SQLite helpers
+|   +-- features/         # feature engineering
+|   +-- models/           # training and model loading
+|   +-- services/         # prediction, recommendations, simulation
++-- tests/                # pytest tests
+```
 
-SQLite stores each successful prediction locally. This gives the dashboard a simple history view and makes it easier to inspect what the system predicted over time.
-
-## Training vs Inference
-
-Training and inference are intentionally separate.
-
-`src/models/train.py` trains the model offline. It loads historical sensor data, creates RUL labels, builds features, trains the model, evaluates it, and saves the trained artifact to `models/`.
-
-FastAPI does not retrain the model. During prediction, it only loads the saved model and uses it to make new predictions.
-
-This separation matters because training can be slow and experimental, while inference should be fast, repeatable, and reliable for the dashboard.
-
-## Why This Architecture?
-
-The frontend and backend are decoupled so each part has a clear job. Streamlit focuses on the user experience, while FastAPI focuses on validation, prediction logic, and persistence.
-
-The API design makes the model reusable. Another frontend, scheduled job, or external service could call `/predict` without changing the ML code.
-
-FastAPI also helps with debugging because `/docs`, `/health`, and structured request validation make it easier to test the backend separately from the dashboard.
-
-SQLite is enough for this local MVP because prediction history is small and runs on one machine. For a production system with many users or machines, PostgreSQL or another managed database would be a better fit.
-
-## Technology Stack
-
-- **Python**: core language
-- **pandas / NumPy**: data loading and preprocessing
-- **scikit-learn**: model training and persistence
-- **FastAPI**: backend prediction API
-- **Streamlit**: frontend dashboard
-- **SQLite**: local prediction history
-- **Plotly**: sensor trend visualization
-- **pytest**: lightweight testing
-
-## Local Setup
+## Run Locally
 
 Create and activate a virtual environment:
 
@@ -119,7 +120,7 @@ py -m venv .venv
 pip install -r requirements.txt
 ```
 
-Generate sample C-MAPSS-like data:
+Generate sample data:
 
 ```powershell
 py -m scripts.create_sample_data
@@ -131,196 +132,182 @@ Train the model:
 py -m scripts.train_model --data data/raw/sample_train_FD001.txt
 ```
 
-Run the FastAPI backend:
+## Environment Variables
+
+The dashboard supports two prediction modes:
+
+```text
+PREDICTION_MODE=api
+PREDICTION_MODE=direct
+```
+
+Use `api` for local development with FastAPI. Use `direct` for Streamlit Cloud or any deployment where only the Streamlit app is running.
+
+Optional API URL override:
+
+```text
+PREDICTIVE_MAINTENANCE_API_URL=http://127.0.0.1:8000
+```
+
+PowerShell examples:
 
 ```powershell
+$env:PREDICTION_MODE="api"
+$env:PREDICTIVE_MAINTENANCE_API_URL="http://127.0.0.1:8000"
+```
+
+```powershell
+$env:PREDICTION_MODE="direct"
+```
+
+## Local Development Workflow
+
+Local development uses API mode by default. Streamlit calls FastAPI, FastAPI loads the trained model, and successful predictions are written to SQLite history.
+
+Start the FastAPI service:
+
+```powershell
+$env:PREDICTION_MODE="api"
 py -m uvicorn api.main:app --reload --port 8000
 ```
 
-Run the Streamlit dashboard in a second terminal:
+Open the API docs:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+In a second terminal, start the dashboard:
 
 ```powershell
+$env:PREDICTION_MODE="api"
 py -m streamlit run app/dashboard.py
 ```
 
 Open:
 
 ```text
-FastAPI docs: http://127.0.0.1:8000/docs
-Dashboard:    http://localhost:8501
+http://localhost:8501
 ```
 
-Run tests:
+## Cloud Deployment Workflow
+
+Direct mode is intended for Streamlit Cloud-style deployments where there is no separate FastAPI backend. Streamlit loads `models/rul_model.joblib` directly and uses the same `MaintenancePredictor` service class as the API.
+
+Set the environment variable in your deployment settings:
+
+```text
+PREDICTION_MODE=direct
+```
+
+Then run only the dashboard:
 
 ```powershell
-py -m pytest tests
+py -m streamlit run app/dashboard.py
 ```
 
-## API Endpoints
+Direct mode requires the trained model artifact to be present at:
 
-### `GET /health`
+```text
+models/rul_model.joblib
+```
 
-Checks that the backend is running and reports whether the trained model artifact exists.
+In direct mode, prediction history is read-only from any existing local SQLite file. New prediction history writes remain part of the FastAPI local workflow.
+
+## API Examples
+
+### Health Check
+
+```powershell
+curl http://127.0.0.1:8000/health
+```
 
 Example response:
 
 ```json
 {
   "status": "ok",
+  "service": "Predictive Maintenance AI Platform API",
   "model_available": true
 }
 ```
 
-### `POST /predict`
+### Prediction
 
-Accepts recent sensor cycles for a machine and returns the RUL prediction, risk level, and recommendation.
+`POST /predict` accepts a machine `unit_id` and recent sensor cycles. Each cycle should include `cycle`, three operating settings, and `sensor_1` through `sensor_21`.
 
 Example response:
 
 ```json
 {
   "unit_id": 1,
-  "predicted_rul": 7.46,
-  "risk_level": "high",
-  "recommendation": "Schedule immediate inspection. Predicted RUL is about 7 cycles, so defer non-critical operation until maintenance is reviewed."
+  "predicted_rul": 24.7,
+  "risk_level": "HIGH",
+  "recommendation": "Schedule immediate inspection. Predicted RUL is about 25 cycles, so defer non-critical operation until maintenance is reviewed."
 }
 ```
 
-### `GET /history`
+### Prediction History
 
-Returns recent prediction records saved by the backend.
-
-## Dashboard Features
-
-- Select a machine/unit from the dataset
-- View sensor trends across operating cycles
-- View a focused latest-window sensor trend chart
-- Send recent sensor readings to FastAPI for prediction
-- Display predicted RUL, risk level, and recommendation
-- Show the latest prediction history from SQLite
-- Display model metadata after training
-
-## Project Structure
-
-```text
-.
-+-- api/                  # FastAPI backend
-|   +-- main.py
-|   +-- schemas.py
-+-- app/                  # Streamlit frontend
-|   +-- dashboard.py
-+-- data/
-|   +-- raw/              # raw or sample sensor data
-|   +-- processed/        # optional processed data
-|   +-- runtime/          # local SQLite database
-+-- models/               # trained model artifacts
-+-- scripts/              # data generation and training scripts
-+-- src/
-|   +-- data/             # data loading and RUL target creation
-|   +-- database/         # SQLite helper functions
-|   +-- features/         # feature engineering
-|   +-- models/           # model training and loading
-|   +-- services/         # prediction and recommendation logic
-+-- tests/                # lightweight tests
-+-- requirements.txt
-+-- README.md
+```powershell
+curl http://127.0.0.1:8000/history
 ```
 
-## Data Flow
+Returns recent prediction records stored in SQLite.
 
-1. Raw sensor time-series data is loaded from `data/raw/`.
-2. The training pipeline creates the RUL target.
-3. Feature engineering summarizes recent sensor windows.
-4. The model is trained and saved to `models/`.
-5. Streamlit sends selected recent cycles to FastAPI.
-6. FastAPI builds inference features and predicts RUL.
-7. The prediction is converted into risk and recommendation text.
-8. FastAPI inserts the prediction record into SQLite.
-9. Streamlit displays the prediction and recent history.
+## Screenshots
 
-## Prediction History
-
-The active local database is:
+Add or update screenshots after running the dashboard:
 
 ```text
-data/runtime/predictions.db
+screenshots/dashboard_overview.png
+screenshots/prediction_result.png
+screenshots/fastapi_docs.png
 ```
 
-The table is:
+Current screenshot placeholders:
 
-```text
-prediction_history
+![Dashboard Overview](screenshots/dashboard_overview.png)
+
+![Prediction Result](screenshots/prediction_result.png)
+
+![FastAPI Docs](screenshots/fastapi_docs.png)
+
+## Testing
+
+Run the test suite:
+
+```powershell
+py -m pytest tests
 ```
 
-Stored columns:
+Run a lightweight API smoke test:
 
-- `id`
-- `unit_id`
-- `predicted_rul`
-- `risk_level`
-- `recommendation`
-- `created_at`
-
-FastAPI inserts a new row after each successful `/predict` request.
-
-## Example Workflow
-
-1. Generate sample data.
-2. Train the RUL model.
-3. Start FastAPI on port `8000`.
-4. Start the Streamlit dashboard.
-5. Select a machine unit.
-6. Review sensor trend charts.
-7. Click **Predict Failure Risk**.
-8. Review predicted RUL, risk level, recommendation, and prediction history.
-
-## Key Engineering Concepts Learned
-
-- **API validation**: FastAPI and Pydantic define the expected prediction request shape.
-- **Model serving**: the trained model is loaded by the backend and used through an API.
-- **Time-series preprocessing**: recent sensor windows are converted into useful model features.
-- **Frontend/backend separation**: Streamlit handles interaction, while FastAPI handles prediction logic.
-- **Persistence layer**: SQLite stores prediction history so results are not lost after one request.
-- **Model metadata**: training metrics and model details are saved for transparency.
-- **Training vs inference**: model training happens offline, while the API performs fast prediction only.
-
-## Common Real-World Challenges
-
-- **Model drift**: machines, environments, and sensor behavior can change over time, so model performance needs monitoring.
-- **Bad input data**: missing sensors, noisy readings, or incorrect units can lead to unreliable predictions.
-- **Preprocessing mismatches**: training and inference must use the same feature logic, or predictions may be misleading.
-- **Scaling beyond SQLite**: SQLite is fine locally, but larger deployments usually need PostgreSQL or another production database.
-- **Silent ML failures**: a model can return a number even when the input data is poor, so validation and monitoring are important.
-
-## Current Limitations
-
-- The included sample data is synthetic and mainly supports local demonstration.
-- The model is a simple Random Forest regressor.
-- Validation should be improved with machine-level train/test splits.
-- SQLite is appropriate for local development, but not for high-concurrency production use.
-- The dashboard expects the FastAPI backend to be running locally.
-- The project does not currently include Docker, CI/CD, authentication, monitoring, or cloud deployment.
+```powershell
+py -c "from fastapi.testclient import TestClient; from api.main import app; c=TestClient(app); print(c.get('/health').json())"
+```
 
 ## Future Improvements
 
-- Train and evaluate on the full NASA C-MAPSS dataset.
-- Add better validation by splitting train/test data by machine unit.
-- Compare additional models such as Gradient Boosting, XGBoost, LSTM, or temporal CNNs.
-- Add model explainability with feature importance or SHAP.
-- Add Docker and `docker-compose`.
-- Add more tests for feature engineering, API prediction, and database writes.
-- Add model versioning and experiment tracking.
-- Add a short demo GIF for the GitHub README.
+- Train and evaluate on the full NASA C-MAPSS dataset
+- Add machine-level train/validation splits
+- Compare Random Forest against gradient boosting and sequence models
+- Add model explainability with feature importance or SHAP
+- Add Docker and `docker-compose`
+- Add CI checks for tests and formatting
+- Add model versioning and experiment tracking
+- Add drift monitoring and data quality checks
+- Add PostgreSQL for multi-user prediction history
+- Add a short demo GIF for the README
 
-## What I Learned
+## CV Bullet Points
 
-This project helped me practice building an applied ML system beyond a notebook:
+- Built an end-to-end predictive maintenance AI platform using Python, FastAPI, Streamlit, scikit-learn, and SQLite.
+- Engineered time-series sensor features to predict Remaining Useful Life and classify machine risk into operational severity levels.
+- Deployed a local model-serving API with health checks, prediction history, structured request validation, and dashboard integration.
+- Designed an industrial monitoring dashboard with system health cards, risk score, sensor trends, and maintenance recommendations.
+- Created a reproducible local workflow for sample data generation, model training, API serving, frontend monitoring, and automated tests.
 
-- converting time-series sensor data into model features
-- training and saving an ML model
-- serving predictions through FastAPI
-- building a dashboard with Streamlit
-- storing prediction history for traceability
-- communicating predictions as practical maintenance actions
+## Current Limitations
 
-This is a portfolio project, not a production maintenance platform. The goal is to show clear ML engineering thinking in a runnable local system.
+This is a portfolio project, not a production maintenance system. The included sample data is synthetic, the model is intentionally simple, and the local SQLite setup is designed for demonstration rather than high-concurrency production use.
