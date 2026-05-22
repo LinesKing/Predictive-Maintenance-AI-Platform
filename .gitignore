@@ -11,17 +11,21 @@ pytest-cache-files-*/
 
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/sample_train_FD001.txt
 data/processed/*
 !data/processed/.gitkeep
 data/runtime/*
 !data/runtime/.gitkeep
 models/*
 !models/.gitkeep
+!models/model_metadata.json
+!models/rul_model.joblib
 *.db
 *.db-journal
 *.sqlite
 *.sqlite3
 *.joblib
+!models/rul_model.joblib
 *.pkl
 
 .env
