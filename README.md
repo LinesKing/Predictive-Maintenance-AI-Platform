@@ -212,6 +212,8 @@ Direct mode requires the trained model artifact to be present at:
 models/rul_model.joblib
 ```
 
+If the default demo data or model artifact is missing in a Streamlit Cloud runtime, the dashboard prepares them automatically by generating the sample dataset and training the demo model once in the app filesystem.
+
 In direct mode, prediction history is read-only from any existing local SQLite file. New prediction history writes remain part of the FastAPI local workflow.
 
 ## API Examples
