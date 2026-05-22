@@ -19,8 +19,19 @@ from src.services.predictor import MaintenancePredictor
 from src.services.sensor_simulator import simulate_sensor_cycles
 from scripts.create_sample_data import create_sample_data
 
-API_URL = os.getenv("PREDICTIVE_MAINTENANCE_API_URL", "http://127.0.0.1:8000")
-PREDICTION_MODE_ENV = os.getenv("PREDICTION_MODE") or st.secrets.get("PREDICTION_MODE", None)
+
+def get_app_setting(name: str, default: str | None = None) -> str | None:
+    value = os.getenv(name)
+    if value:
+        return value
+    try:
+        return st.secrets.get(name, default)
+    except Exception:
+        return default
+
+
+API_URL = get_app_setting("PREDICTIVE_MAINTENANCE_API_URL", "http://127.0.0.1:8000")
+PREDICTION_MODE_ENV = get_app_setting("PREDICTION_MODE")
 DEFAULT_DATA = RAW_DATA_DIR / "sample_train_FD001.txt"
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
