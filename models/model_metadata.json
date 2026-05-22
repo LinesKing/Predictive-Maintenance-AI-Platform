@@ -1,0 +1,9 @@
+{
+  "mae": 2.8253591743786366,
+  "rmse": 3.9992152000160086,
+  "training_rows": 5394,
+  "feature_count": 130,
+  "window_size": 20,
+  "trained_at": "2026-05-14T01:59:36.792721+00:00",
+  "data_path": "data\\raw\\sample_train_FD001.txt"
+}
